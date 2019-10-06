@@ -19,5 +19,9 @@ class CharacterExtractor():
         chars_transposed = self._text_row_extractor.extract(image_transpose)
         for transposed_char in chars_transposed:
             char = transposed_char.transpose()
-            # Trim whitespace top and bottom
-            yield char
+            # Trim whitespace image top and bottom
+            char_boolean = np.any(char == 0, axis=1)
+            first_nonempty_row = np.argmax(char_boolean)
+            last_nonempty_row = np.argmax(char_boolean[::-1])
+            crop = min(first_nonempty_row, last_nonempty_row)
+            yield char if crop == 0 else char[crop:-crop]
