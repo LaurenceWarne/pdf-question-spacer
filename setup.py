@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name="pdf-question-spacer",
     packages=find_packages(),
+    test_suite="tests",
     include_package_data=True,
     python_requires=">=3",
     url="",
