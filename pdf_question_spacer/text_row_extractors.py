@@ -1,16 +1,49 @@
+from typing import Callable
+
 import numpy as np
+
+
+class RowExtraction():
+    """Encapsulates the result of a row extraction on an image."""
+
+    def __init__(self, rows: np.array, row_indices: np.array):
+        self._rows = rows
+        self._row_indices = row_indices
+
+    @property
+    def rows(self) -> np.array:
+        """
+        Return a nested numpy array consisting of rows of text in
+        the image.
+        """
+        return self._rows
+
+    @property
+    def row_indices(self) -> np.array:
+        return self._row_indices
 
 
 class TextRowExtractor():
 
     def __init__(self, pixel_predicate=lambda arr: arr == 0):
-        self.pixel_predicate = pixel_predicate
+        self._pixel_predicate = pixel_predicate
 
-    def extract(self, image):
-        row_contains_black = np.any(self.pixel_predicate(image), axis=1)
+    @property
+    def pixel_predicate(self) -> Callable[[np.array], np.array]:
+        return self._pixel_predicate
+
+    @pixel_predicate.setter
+    def pixel_predicate(self, pixel_predicate):
+        self._pixel_predicate = pixel_predicate
+
+    def extract(self, image: np.array) -> RowExtraction:
+        row_contains_black = np.any(self._pixel_predicate(image), axis=1)
         runs = find_runs(1, row_contains_black)
-        for run in runs:
-            yield image[slice(*run)]
+        return RowExtraction(
+            # can't apply np.fromiter to 2d arrays
+            np.array([image[slice(*run)] for run in runs]),
+            runs
+        )
 
 
 # credit:
