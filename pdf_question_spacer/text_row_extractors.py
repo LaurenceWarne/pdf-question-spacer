@@ -1,25 +1,28 @@
-from typing import Callable
+from typing import Callable, Tuple
 
+from nptyping import Array
 import numpy as np
 
 
 class RowExtraction():
     """Encapsulates the result of a row extraction on an image."""
 
-    def __init__(self, rows: np.array, row_indices: np.array):
+    def __init__(
+            self, rows: Array[Array],
+            row_indices: Array[Tuple[int, int]]
+    ):
         self._rows = rows
         self._row_indices = row_indices
 
     @property
-    def rows(self) -> np.array:
+    def rows(self) -> Array[Array]:
         """
-        Return a nested numpy array consisting of rows of text in
-        the image.
+        Return a nested numpy array denoting rows of text in the image.
         """
         return self._rows
 
     @property
-    def row_indices(self) -> np.array:
+    def row_indices(self) -> Array[Tuple[int, int]]:
         return self._row_indices
 
 
@@ -29,14 +32,17 @@ class TextRowExtractor():
         self._pixel_predicate = pixel_predicate
 
     @property
-    def pixel_predicate(self) -> Callable[[np.array], np.array]:
+    def pixel_predicate(self) -> Callable[[Array[Array]], Array[Array[bool]]]:
         return self._pixel_predicate
 
     @pixel_predicate.setter
-    def pixel_predicate(self, pixel_predicate):
+    def pixel_predicate(
+            self,
+            pixel_predicate: Callable[[Array[Array]], Array[Array[bool]]]
+    ):
         self._pixel_predicate = pixel_predicate
 
-    def extract(self, image: np.array) -> RowExtraction:
+    def extract(self, image: Array[Array]) -> RowExtraction:
         row_contains_black = np.any(self._pixel_predicate(image), axis=1)
         runs = find_runs(1, row_contains_black)
         return RowExtraction(
@@ -48,7 +54,7 @@ class TextRowExtractor():
 
 # credit:
 # https://stackoverflow.com/questions/31544129/extract-separate-non-zero-blocks-from-array
-def find_runs(value, a):
+def find_runs(value, a) -> Array[Tuple[int, int]]:
     # Create an array that is 1 where a is `value`, and pad each end with
     # an extra 0.
     isvalue = np.concatenate(([0], np.equal(a, value).view(np.int8), [0]))
