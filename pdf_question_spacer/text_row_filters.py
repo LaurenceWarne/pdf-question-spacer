@@ -7,8 +7,12 @@ from .text_row_extractors import RowExtraction
 
 class RowFilter():
 
-    def __init__(self, regex: str):
+    def __init__(
+            self, regex: str,
+            image_to_text_func=pytesseract.image_to_string
+    ):
         self._regex = regex
+        self._image_to_text_func = image_to_text_func
 
     @property
     def regex(self):
@@ -18,7 +22,8 @@ class RowFilter():
     def regex(self, regex: str):
         self._regex = regex
 
-    def filter(self, extraction_obj: RowExtraction) -> RowExtraction:
+    def filter_extraction(
+            self, extraction_obj: RowExtraction) -> RowExtraction:
         """
         Return a RowExtraction obj with rows taken from the passed
         RowExtraction obj, and matching the regular expression held by
@@ -26,7 +31,7 @@ class RowFilter():
         """
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
-            text = pytesseract.image_to_string(row).strip()
+            text = self._image_to_text_func(row).strip()
             if (re.match(self._regex, text)):
                 matching_indices.append(index)
         return RowExtraction(

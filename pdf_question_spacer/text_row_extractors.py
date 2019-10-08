@@ -5,7 +5,10 @@ import numpy as np
 
 
 class RowExtraction():
-    """Encapsulates the result of a row extraction on an image."""
+    """
+    Encapsulates the result of a row-wise extraction from an image
+    of sub-images satisfying some predicate.
+    """
 
     def __init__(
             self, rows: Array[Array],
