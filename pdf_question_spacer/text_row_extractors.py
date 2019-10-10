@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Callable
 
 from nptyping import Array
 import numpy as np
@@ -12,7 +12,7 @@ class RowExtraction():
 
     def __init__(
             self, rows: Array[Array],
-            row_indices: Array[Tuple[int, int]]
+            row_indices: Array[Array[int, ..., 2]]
     ):
         self._rows = rows
         self._row_indices = row_indices
@@ -25,7 +25,7 @@ class RowExtraction():
         return self._rows
 
     @property
-    def row_indices(self) -> Array[Tuple[int, int]]:
+    def row_indices(self) -> Array[Array[int, ..., 2]]:
         return self._row_indices
 
 
@@ -57,7 +57,7 @@ class TextRowExtractor():
 
 # credit:
 # https://stackoverflow.com/questions/31544129/extract-separate-non-zero-blocks-from-array
-def find_runs(value, a) -> Array[Tuple[int, int]]:
+def find_runs(value, a) -> Array[Array[int, ..., 2]]:
     # Create an array that is 1 where a is `value`, and pad each end with
     # an extra 0.
     isvalue = np.concatenate(([0], np.equal(a, value).view(np.int8), [0]))
