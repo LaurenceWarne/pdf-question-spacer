@@ -30,6 +30,10 @@ class RowExtraction():
 
 
 class TextRowExtractor():
+    """
+    Extract indices representing the start and end points of rows ('regions')
+    matching some predicate.
+    """
 
     def __init__(self, pixel_predicate=lambda arr: arr == 0):
         self._pixel_predicate = pixel_predicate
