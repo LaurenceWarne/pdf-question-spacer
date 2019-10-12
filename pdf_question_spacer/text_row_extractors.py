@@ -62,6 +62,7 @@ class TextRowExtractor():
 # credit:
 # https://stackoverflow.com/questions/31544129/extract-separate-non-zero-blocks-from-array
 def find_runs(value, a) -> Array[Array[int, ..., 2]]:
+    """inclusive-exclusive"""
     # Create an array that is 1 where a is `value`, and pad each end with
     # an extra 0.
     isvalue = np.concatenate(([0], np.equal(a, value).view(np.int8), [0]))

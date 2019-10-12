@@ -32,10 +32,8 @@ class WhitespaceInserter():
             img = pad_array(
                 img, slice_point, whitespace_line, self.whitespace_length
             )
-            all_region_indices = np.where(
-                all_region_indices < start,
-                all_region_indices,
-                img + self.whitespace_length
+            all_region_indices = add_to_regions_above(
+                start, all_region_indices, self.whitespace_length
             )
         return (img, all_region_indices)
 
@@ -54,7 +52,7 @@ class ImagePager():
             img: Array[Array[Any]],
             regions: Array[Array[int, ..., 2]],
             whitespace_element: Any
-    ):
+    ) -> Array[Array[Array[Any]]]:
         """
         Returns an array of images (as arrays of size corresponding to
         page_pixel_length) such that none of the regions of the image specified
@@ -63,26 +61,60 @@ class ImagePager():
         appropriate.
         """
         region_pages = regions // self.page_pixel_length
-        overflowing_regions = regions[region_pages[:, 0] == region_pages[:, 1]]
-        if (overflowing_regions):
+        overflowing_regions = regions[region_pages[:, 0] != region_pages[:, 1]]
+        whitespace_line = np.repeat(whitespace_element, img.shape[1])
+        if (overflowing_regions.size != 0):
             region_start = overflowing_regions[0, 0]
-            pad_amount = self.page_pixel_length - region_start
-            img = pad_array(img, region_start, pad_amount)
-            regions = np.where(
-                regions < region_start, regions, regions + pad_amount
-            )
+            pad_amount = inv_mod(region_start, self.page_pixel_length)
+            img = pad_array(img, region_start, whitespace_line, pad_amount)
+            regions = add_to_regions_above(region_start, regions, pad_amount)
             return self.organize_pages(img, regions, whitespace_element)
-        else:
-            return np.split(img, self.page_pixel_length)
+        else:  # We need to add padding to the last page so it's a full page
+            end_padding = inv_mod(img.shape[0], self.page_pixel_length)
+            if (end_padding):
+                return np.array(np.array_split(
+                    np.concatenate((
+                        img, [whitespace_line] * end_padding
+                    )),
+                    np.ceil(img.shape[0] / self.page_pixel_length)
+                ))
+            else:
+                return np.array(np.array_split(
+                    img, img.shape[0] / self.page_pixel_length
+                ))
 
 
-def pad_array(array: Array[Any], index: int, pad_element: Any, amount: int):
+def inv_mod(dividend, divisor):
+    """Additive inverse, 0 <= return < divisor"""
+    return (divisor - (dividend % divisor)) % divisor
+
+
+def pad_array(
+        array: Array[Any],
+        index: int,
+        pad_element: Any,
+        amount: int
+) -> Array[Any]:
     """
     Add 'amount' sets of 'pad_element' to the specified array at the index
     specified by 'index'.
     """
-    return np.concatenate(
+    return np.concatenate((
         array[:index],
         [pad_element] * amount,
         array[index:]
-    )
+    ))
+
+
+def add_to_regions_above(
+        cut_off: int,
+        regions: Array[Array[int, ..., 2]],
+        amount: int,
+        include_equality: bool = True
+):
+    if (include_equality):
+        shifted_arr = (regions[:, 0] >= cut_off) * amount
+    else:
+        shifted_arr = (regions[:, 0] > cut_off) * amount
+    regions += shifted_arr.reshape(len(regions), 1)
+    return regions
