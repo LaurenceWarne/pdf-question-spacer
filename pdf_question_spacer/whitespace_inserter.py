@@ -4,7 +4,7 @@ import numpy as np
 from nptyping import Array
 
 
-class WhitespaceInserter():
+class WhitespaceInserter:
     """Inserts whitespace into numpy array images."""
 
     def __init__(self, whitespace_length: int, add_before_region: bool = True):
@@ -38,7 +38,7 @@ class WhitespaceInserter():
         return (img, all_region_indices)
 
 
-class ImagePager():
+class ImagePager:
     """
     Breaks image arrays into multiple arrays ('pages') in such a way that
     no text is cut in half.
@@ -84,8 +84,11 @@ class ImagePager():
                 ))
 
 
-def inv_mod(dividend, divisor):
-    """Additive inverse, 0 <= return < divisor"""
+def inv_mod(dividend: int, divisor: int):
+    """
+    Return the additive inverse of 'dividend' wrt to modulo divisor arithmetic,
+    0 <= return < divisor.
+    """
     return (divisor - (dividend % divisor)) % divisor
 
 

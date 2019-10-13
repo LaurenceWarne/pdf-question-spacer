@@ -1,26 +1,42 @@
 import re
+from typing import Callable, Any
 
+from nptyping import Array
 import pytesseract
 
 from .text_row_extractors import RowExtraction
 
 
-class RowFilter():
+class RowFilter:
+    """
+    Filters regions from some RowExtraction by extracting text and applying
+    some predicate.
+    """
 
     def __init__(
             self, regex: str,
-            image_to_text_func=pytesseract.image_to_string
+            image_to_text_func: Callable[
+                [Array[Array[Any]]], str
+            ] = pytesseract.image_to_string
     ):
         self._regex = regex
         self._image_to_text_func = image_to_text_func
 
     @property
-    def regex(self):
+    def regex(self) -> str:
         return self._regex
 
     @regex.setter
     def regex(self, regex: str):
         self._regex = regex
+
+    @property
+    def image_to_text_func(self) -> Callable[[Array[Array[Any]]], str]:
+        return self._image_to_text_func
+
+    @regex.setter
+    def regex(self, image_to_text_func: Callable[[Array[Array[Any]]], str]):
+        self._image_to_text_func = image_to_text_func
 
     def filter_extraction(
             self, extraction_obj: RowExtraction) -> RowExtraction:
