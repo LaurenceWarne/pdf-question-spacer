@@ -1,3 +1,7 @@
+"""
+This module contains classes used for inserting whitespace into the appropriate
+places in the pdf, the last stage of processing.
+"""
 from typing import Any, Tuple
 
 import numpy as np
@@ -47,6 +51,48 @@ class ImagePager:
     def __init__(self, page_pixel_length: int):
         self.page_pixel_length = page_pixel_length
 
+    def pad_regions_spanning_pages(
+            self,
+            img: Array[Array[Any]],
+            regions: Array[Array[int, ..., 2]],
+            whitespace_element: Any
+    ) -> Array[Array[Array[Any]]]:
+        """
+        Add lines of whitespace before regions that would otherwise span
+        multiple pages. The new padded image array is then returned.
+        """
+        region_pages = regions // self.page_pixel_length
+        overflowing_regions = regions[region_pages[:, 0] != region_pages[:, 1]]
+        whitespace_line = np.repeat(whitespace_element, img.shape[1])
+        if (overflowing_regions.size != 0):
+            region_start = overflowing_regions[0, 0]
+            pad_amount = inv_mod(region_start, self.page_pixel_length)
+            img = pad_array(img, region_start, whitespace_line, pad_amount)
+            regions = add_to_regions_above(region_start, regions, pad_amount)
+            return self.pad_regions_spanning_pages(
+                img, regions, whitespace_element
+            )
+        else:
+            return img
+
+    def split_into_pages(
+            self,
+            img: Array[Array[Any]],
+            regions: Array[Array[int, ..., 2]],
+            whitespace_element: Any
+    ) -> Array[Array[Array[Any]]]:
+        """
+        Return an array of image arrays, with padding added to the last page
+        so that all pages are of the same shape.
+        """
+        end_padding = inv_mod(img.shape[0], self.page_pixel_length)
+        if (end_padding):
+            whitespace_line = np.repeat(whitespace_element, img.shape[1])
+            img = np.concatenate((img, [whitespace_line] * end_padding))
+        return np.array(np.array_split(
+            img, img.shape[0] / self.page_pixel_length
+        ))
+
     def organize_pages(
             self,
             img: Array[Array[Any]],
@@ -59,29 +105,15 @@ class ImagePager:
         by the parameter 'regions' span more than one page.
         Whitespace corresponding to the 'whitespace' parameter is added as
         appropriate.
+
+        Is a wrapper around pad_regions_spanning_pages() and split_into_pages()
         """
-        region_pages = regions // self.page_pixel_length
-        overflowing_regions = regions[region_pages[:, 0] != region_pages[:, 1]]
-        whitespace_line = np.repeat(whitespace_element, img.shape[1])
-        if (overflowing_regions.size != 0):
-            region_start = overflowing_regions[0, 0]
-            pad_amount = inv_mod(region_start, self.page_pixel_length)
-            img = pad_array(img, region_start, whitespace_line, pad_amount)
-            regions = add_to_regions_above(region_start, regions, pad_amount)
-            return self.organize_pages(img, regions, whitespace_element)
-        else:  # We need to add padding to the last page so it's a full page
-            end_padding = inv_mod(img.shape[0], self.page_pixel_length)
-            if (end_padding):
-                return np.array(np.array_split(
-                    np.concatenate((
-                        img, [whitespace_line] * end_padding
-                    )),
-                    np.ceil(img.shape[0] / self.page_pixel_length)
-                ))
-            else:
-                return np.array(np.array_split(
-                    img, img.shape[0] / self.page_pixel_length
-                ))
+        shifted_img = self.pad_regions_spanning_pages(
+            img, regions, whitespace_element
+        )
+        return self.split_into_pages(
+            shifted_img, regions, whitespace_element
+        )
 
 
 def inv_mod(dividend: int, divisor: int):

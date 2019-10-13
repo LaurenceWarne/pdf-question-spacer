@@ -1,3 +1,8 @@
+"""
+This module handles the selection of image regions, the second stage of
+processing.
+"""
+
 import re
 from typing import Callable, Any
 

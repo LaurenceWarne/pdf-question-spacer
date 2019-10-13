@@ -1,3 +1,8 @@
+"""
+This module contains classes handling the first stage of processing the pdf:
+extracting rows of text.
+"""
+
 from dataclasses import dataclass
 
 from typing import Callable, Any
