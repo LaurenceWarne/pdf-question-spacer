@@ -1,6 +1,7 @@
+import sys
+
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 from wand.image import Image
 
 from .text_row_extractors import TextRowExtractor
@@ -8,7 +9,7 @@ from .text_row_filters import RowFilter
 from .whitespace_inserter import WhitespaceInserter, ImagePager
 
 
-def space_pdf(filename, skip_first=True):
+def space_pdf(filename=sys.argv[1], whitespace=int(sys.argv[2]), skip_first=True):
 
     print("Opening pdf as images...")
     all_images = []
@@ -27,13 +28,13 @@ def space_pdf(filename, skip_first=True):
         print("Extracting rows of text from image...")
         extractor = TextRowExtractor()
         extraction = extractor.extract(img)
-        row_filter = RowFilter("^[\duvil]+[\.\)]")        
+        row_filter = RowFilter("^[\duvil]+[\.\)]")
 
         print("Filtering extracted rows by specified regular expression...")
         filtered_extraction = row_filter.filter_extraction(extraction)
 
         print("Inserting whitespace")
-        wspace_inserter = WhitespaceInserter(200)
+        wspace_inserter = WhitespaceInserter(whitespace)
         img, shifted_regions = wspace_inserter.insert_whitespace(
             img,
             filtered_extraction.row_indices[skip_first:],
