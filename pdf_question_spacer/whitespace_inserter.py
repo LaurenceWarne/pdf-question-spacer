@@ -37,7 +37,7 @@ class WhitespaceInserter:
                 img, slice_point, whitespace_line, self.whitespace_length
             )
             all_region_indices = add_to_regions_above(
-                start, all_region_indices, self.whitespace_length
+                slice_point, all_region_indices, self.whitespace_length
             )
         return (img, all_region_indices)
 
@@ -82,8 +82,8 @@ class ImagePager:
             whitespace_element: Any
     ) -> Array[Array[Array[Any]]]:
         """
-        Return an array of image arrays, with padding added to the last page
-        so that all pages are of the same shape.
+        Return an array of image arrays, with padding added to the last array
+        so that all arrays are of the same shape.
         """
         end_padding = inv_mod(img.shape[0], self.page_pixel_length)
         if (end_padding):
@@ -151,5 +151,4 @@ def add_to_regions_above(
         shifted_arr = (regions[:, 0] >= cut_off) * amount
     else:
         shifted_arr = (regions[:, 0] > cut_off) * amount
-    regions += shifted_arr.reshape(len(regions), 1)
-    return regions
+    return regions + shifted_arr.reshape(len(regions), 1)
