@@ -11,7 +11,7 @@ setup(
     entry_points={
         "console_scripts":
         [
-            "space-pdf=pdf_question_spacer.space_pdf:space_pdf",
+            "space-pdf=pdf_question_spacer.space_pdf:main",
         ],
     },
     version="0.1",

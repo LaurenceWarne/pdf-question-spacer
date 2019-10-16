@@ -1,4 +1,4 @@
-import sys
+import argparse
 
 import numpy as np
 import cv2
@@ -9,11 +9,56 @@ from .text_row_filters import RowFilter
 from .whitespace_inserter import WhitespaceInserter, ImagePager
 
 
-def space_pdf(filename=sys.argv[1], whitespace=int(sys.argv[2]), skip_first=True):
+def parse_args():
+    description = """
+    Add whitespace to sections of pdfs and output the resulting images as pngs.
+    """
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "infile",
+        help="name of pdf to add whitespace to",
+    )
+    parser.add_argument(
+        "whitespace_length",
+        help="number of lines of whitespace to add per match",
+        type=int,
+        default=400
+    )
+    parser.add_argument(
+        "-r",
+        "--regex",
+        help="match lines with this regular expression",
+        default="^[\duvil]+[\.\)]",
+    )
+    parser.add_argument(
+        "-c",
+        "--colour",
+        help="Colour of the whitespace",
+        default=255
+    )
+    parser.add_argument(
+        "-s1",
+        "--skip-first",
+        help="skip first regular expression match",
+        action="store_true"
+    )
+    parser.add_argument(
+        "-d",
+        "--debug-text",
+        help="print out text extracted from the pdf",
+        action="store_true"
+    )
+    return parser.parse_args()
+
+
+def main():
+
+    # Parse args
+    args = parse_args()
 
     print("Opening pdf as images...")
     all_images = []
-    with Image(filename=filename, resolution=150) as images:
+    with Image(filename=args.infile, resolution=150) as images:
         for single_image in images.sequence:
             with Image(single_image) as i:
                 im = cv2.imdecode(
@@ -28,25 +73,29 @@ def space_pdf(filename=sys.argv[1], whitespace=int(sys.argv[2]), skip_first=True
         print("Extracting rows of text from image...")
         extractor = TextRowExtractor()
         extraction = extractor.extract(img)
-        row_filter = RowFilter("^[\duvil]+[\.\)]")
+        row_filter = RowFilter(args.regex)
 
         print("Filtering extracted rows by specified regular expression...")
         filtered_extraction = row_filter.filter_extraction(extraction)
 
         print("Inserting whitespace")
-        wspace_inserter = WhitespaceInserter(whitespace)
+        wspace_inserter = WhitespaceInserter(args.whitespace_length)
         img, shifted_regions = wspace_inserter.insert_whitespace(
             img,
-            filtered_extraction.row_indices[skip_first:],
+            filtered_extraction.row_indices[args.skip_first:],
             extraction.row_indices,
-            255
+            args.colour
         )
 
         print("Creating pdf pages")
         pager = ImagePager(im.shape[0])
         pages = pager.organize_pages(
-            img, shifted_regions, 255
+            img, shifted_regions, args.colour
         )
 
         for index, page in enumerate(pages):
             cv2.imwrite("out{}.png".format(index), page)
+
+
+if __name__ == "__main__":
+    main()
