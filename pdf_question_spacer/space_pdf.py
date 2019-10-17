@@ -20,7 +20,9 @@ def parse_args():
     )
     parser.add_argument(
         "whitespace_length",
-        help="number of lines of whitespace to add per match",
+        help="""number of lines of whitespace to add per match (in pixels),
+        default is 400
+        """,
         type=int,
         default=400
     )
@@ -33,7 +35,7 @@ def parse_args():
     parser.add_argument(
         "-c",
         "--colour",
-        help="Colour of the whitespace",
+        help="Colour of the whitespace, default 255 (white)",
         default=255
     )
     parser.add_argument(
@@ -45,7 +47,8 @@ def parse_args():
     parser.add_argument(
         "-d",
         "--debug-text",
-        help="print out text extracted from the pdf",
+        help="""print out text extracted from the pdf, helpful for finding
+        a regex that works as text extraction is not always perfect""",
         action="store_true"
     )
     return parser.parse_args()
@@ -95,6 +98,11 @@ def main():
 
         for index, page in enumerate(pages):
             cv2.imwrite("out{}.png".format(index), page)
+
+        if (args.debug_text):
+            print("All rows found:")
+            for row in row_filter.most_recent_extracted_rows:
+                print(row)
 
 
 if __name__ == "__main__":

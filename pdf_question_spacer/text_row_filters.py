@@ -4,7 +4,7 @@ processing.
 """
 
 import re
-from typing import Callable, Any
+from typing import Callable, Any, Sequence
 
 from nptyping import Array
 import pytesseract
@@ -26,6 +26,7 @@ class RowFilter:
     ):
         self._regex = regex
         self._image_to_text_func = image_to_text_func
+        self._most_recent_extracted_rows = []
 
     @property
     def regex(self) -> str:
@@ -43,6 +44,10 @@ class RowFilter:
     def regex(self, image_to_text_func: Callable[[Array[Array[Any]]], str]):
         self._image_to_text_func = image_to_text_func
 
+    @property
+    def most_recent_extracted_rows(self) -> Sequence[str]:
+        return self._most_recent_extracted_rows
+
     def filter_extraction(
             self, extraction_obj: RowExtraction) -> RowExtraction:
         """
@@ -50,11 +55,13 @@ class RowFilter:
         RowExtraction obj, and matching the regular expression held by
         this object.
         """
+        self._most_recent_extracted_rows.clear()
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
             text = self._image_to_text_func(row).strip()
             if (re.match(self._regex, text)):
                 matching_indices.append(index)
+            self._most_recent_extracted_rows.append(text)
         return RowExtraction(
             extraction_obj.rows[matching_indices],
             extraction_obj.row_indices[matching_indices]
