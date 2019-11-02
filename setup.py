@@ -18,7 +18,8 @@ setup(
     author="Laurence Warne",
     license="MIT",
     install_requires=[
-        "numpy", "Wand", "opencv-python", "pytesseract", "nptyping"
+        "numpy", "Wand", "opencv-python", "pytesseract", "nptyping",
+        "textract"
     ],
     zip_safe=False
 )

@@ -29,7 +29,8 @@ def parse_args():
     parser.add_argument(
         "-r",
         "--regex",
-        help="match lines with this regular expression",
+        help="""match lines with this regular expression. The default regex
+        matches lines which appear to be the start of questions""",
         default="^[\duvil]+[\.\)]",
     )
     parser.add_argument(

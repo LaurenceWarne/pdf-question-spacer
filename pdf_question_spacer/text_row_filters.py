@@ -8,6 +8,7 @@ from typing import Callable, Any, Sequence
 
 from nptyping import Array
 import pytesseract
+import textract
 
 from .text_row_extractors import RowExtraction
 
@@ -66,3 +67,30 @@ class RowFilter:
             extraction_obj.rows[matching_indices],
             extraction_obj.row_indices[matching_indices]
         )
+
+
+class TextMatcher:
+
+    def __init__(
+            self,
+            known_lines: Sequence[str],
+            image_to_text_func: Callable[
+                [Array[Array[Any]]], str
+            ] = pytesseract.image_to_string
+    ):
+        self._image_to_text_func = image_to_text_func
+        self.known_lines = known_lines
+        self._current_index = 0
+
+    def __call__(self, row: [Array[Array[Any]]]) -> str:
+        row_text = self.image_to_text_func(row)
+        if (row_text):
+            self._current_index += 1
+            return self.known_lines[self._current_index]
+        else:
+            return row_text
+
+    @staticmethod
+    def from_file(cls, filename: str) -> "TextMatcher":
+        lines_of_text = textract.process(filename)
+        return TextMatcher(lines_of_text)
