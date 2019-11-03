@@ -1,4 +1,5 @@
 import argparse
+import re
 
 import numpy as np
 import cv2
@@ -47,9 +48,9 @@ def parse_args():
     )
     parser.add_argument(
         "-d",
-        "--debug-text",
-        help="""print out text extracted from the pdf, helpful for finding
-        a regex that works as text extraction is not always perfect""",
+        "--debug",
+        help="""Output the text extracted from the pdf, along with the
+        corresponging region in a matplotlib figure""",
         action="store_true"
     )
     return parser.parse_args()
@@ -100,10 +101,18 @@ def main():
         for index, page in enumerate(pages):
             cv2.imwrite("out{}.png".format(index), page)
 
-        if (args.debug_text):
-            print("All rows found:")
-            for row in row_filter.most_recent_extracted_rows:
-                print(row)
+        if (args.debug):
+            import matplotlib.pyplot as plt
+            for index, row in enumerate(extraction.rows):
+                plt.imshow(row)
+                extracted = row_filter.most_recent_extracted_rows[index]
+                plt.title("EXTRACTED TEXT: " + extracted)
+                plt.title(
+                    "MATCHES REGEX: " +
+                    str(bool(re.match(args.regex, extracted))),
+                    loc="right"
+                )
+                plt.show()
 
 
 if __name__ == "__main__":

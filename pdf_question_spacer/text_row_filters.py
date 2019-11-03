@@ -4,7 +4,6 @@ processing.
 """
 
 import re
-import itertools
 from typing import Callable, Any, Sequence
 
 from nptyping import Array
