@@ -5,7 +5,7 @@ import cv2
 from wand.image import Image
 
 from .text_row_extractors import TextRowExtractor
-from .text_row_filters import RowFilter
+from .text_row_filters import RowFilter, TextMatcher
 from .whitespace_inserter import WhitespaceInserter, ImagePager
 
 
@@ -31,7 +31,7 @@ def parse_args():
         "--regex",
         help="""match lines with this regular expression. The default regex
         matches lines which appear to be the start of questions""",
-        default="^[\duvil]+[\.\)]",
+        default="^(\()?(([\dvi]+)|([a-z]))[\.\)]",
     )
     parser.add_argument(
         "-c",
@@ -77,7 +77,7 @@ def main():
         print("Extracting rows of text from image...")
         extractor = TextRowExtractor()
         extraction = extractor.extract(img)
-        row_filter = RowFilter(args.regex)
+        row_filter = RowFilter(args.regex, TextMatcher.from_file(args.infile))
 
         print("Filtering extracted rows by specified regular expression...")
         filtered_extraction = row_filter.filter_extraction(extraction)

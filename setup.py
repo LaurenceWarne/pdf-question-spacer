@@ -19,7 +19,7 @@ setup(
     license="MIT",
     install_requires=[
         "numpy", "Wand", "opencv-python", "pytesseract", "nptyping",
-        "textract"
+        "textract", "fuzzywuzzy"
     ],
     zip_safe=False
 )
