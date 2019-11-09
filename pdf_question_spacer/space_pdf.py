@@ -104,9 +104,9 @@ def main():
         if (args.debug):
             import matplotlib.pyplot as plt
             for index, row in enumerate(extraction.rows):
-                plt.imshow(row)
+                plt.imshow(row, cmap='gray')
                 extracted = row_filter.most_recent_extracted_rows[index]
-                plt.title("EXTRACTED TEXT: " + extracted)
+                plt.title("EXTRACTED TEXT: '" + extracted + "'")
                 plt.title(
                     "MATCHES REGEX: " +
                     str(bool(re.match(args.regex, extracted))),
