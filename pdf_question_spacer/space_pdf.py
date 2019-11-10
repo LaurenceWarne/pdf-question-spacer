@@ -3,7 +3,7 @@ import re
 
 import numpy as np
 import cv2
-from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image import convert_from_path
 
 from .text_row_extractors import TextRowExtractor
 from .text_row_filters import RowFilter, TextMatcher
@@ -21,7 +21,7 @@ def parse_args():
     )
     parser.add_argument(
         "whitespace_length",
-        help="""number of lines of whitespace to add per match (in pixels),
+        help="""Number of lines of whitespace to add per match (in pixels),
         default is 400
         """,
         type=int,
@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument(
         "-r",
         "--regex",
-        help="""match lines with this regular expression. The default regex
+        help="""Match lines with this regular expression. The default regex
         matches lines which appear to be the start of questions""",
         default="^(\()?(([\dvi]+)|([a-z]))[\.\)]",
     )
@@ -43,15 +43,23 @@ def parse_args():
     parser.add_argument(
         "-s1",
         "--skip-first",
-        help="skip first regular expression match",
+        help="Skip first regular expression match",
         action="store_true"
     )
     parser.add_argument(
         "-d",
         "--debug",
-        help="""Output the text extracted from the pdf, along with the
+        help="""Show the text extracted from the pdf regions, along with the
         corresponging region in a matplotlib figure""",
         action="store_true"
+    )
+    parser.add_argument(
+        "--dpi",
+        help="""The image quality, default is 400. This is passed directly
+        to pdf2image.convert_from_path(), also note using large values
+        will take longer and may cause crashes!""",
+        type=int,
+        default=400
     )
     return parser.parse_args()
 
@@ -62,7 +70,7 @@ def main():
     args = parse_args()
 
     print("Opening pdf as images...")
-    pil_images = convert_from_path(args.infile, dpi=400)
+    pil_images = convert_from_path(args.infile, dpi=args.dpi)
 
     print("Concatenating images...")
     numpy_images = [np.array(im_part.convert("L")) for im_part in pil_images]
