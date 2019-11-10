@@ -3,7 +3,7 @@ import re
 
 import numpy as np
 import cv2
-from wand.image import Image
+from pdf2image import convert_from_path, convert_from_bytes
 
 from .text_row_extractors import TextRowExtractor
 from .text_row_filters import RowFilter, TextMatcher
@@ -62,44 +62,37 @@ def main():
     args = parse_args()
 
     print("Opening pdf as images...")
-    all_images = []
-    with Image(filename=args.infile, resolution=150) as images:
-        for single_image in images.sequence:
-            with Image(single_image) as i:
-                im = cv2.imdecode(
-                    np.asarray(bytearray(i.make_blob("png")), dtype=np.uint8),
-                    cv2.IMREAD_GRAYSCALE
-                )
-                all_images.append(im)
+    pil_images = convert_from_path(args.infile, dpi=400)
 
-        print("Concatenating images...")
-        img = np.concatenate(all_images)
+    print("Concatenating images...")
+    numpy_images = [np.array(im_part.convert("L")) for im_part in pil_images]
+    img = cv2.vconcat(numpy_images)
 
-        print("Extracting rows of text from image...")
-        extractor = TextRowExtractor()
-        extraction = extractor.extract(img)
-        row_filter = RowFilter(args.regex, TextMatcher.from_file(args.infile))
+    print("Extracting rows of text from image...")
+    extractor = TextRowExtractor()
+    extraction = extractor.extract(img)
+    row_filter = RowFilter(args.regex, TextMatcher.from_file(args.infile))
 
-        print("Filtering extracted rows by specified regular expression...")
-        filtered_extraction = row_filter.filter_extraction(extraction)
+    print("Filtering extracted rows by specified regular expression...")
+    filtered_extraction = row_filter.filter_extraction(extraction)
 
-        print("Inserting whitespace")
-        wspace_inserter = WhitespaceInserter(args.whitespace_length)
-        img, shifted_regions = wspace_inserter.insert_whitespace(
-            img,
-            filtered_extraction.row_indices[args.skip_first:],
-            extraction.row_indices,
-            args.colour
-        )
+    print("Inserting whitespace")
+    wspace_inserter = WhitespaceInserter(args.whitespace_length)
+    img, shifted_regions = wspace_inserter.insert_whitespace(
+        img,
+        filtered_extraction.row_indices[args.skip_first:],
+        extraction.row_indices,
+        args.colour
+    )
 
-        print("Creating pdf pages")
-        pager = ImagePager(im.shape[0])
-        pages = pager.organize_pages(
-            img, shifted_regions, args.colour
-        )
+    print("Creating pdf pages")
+    pager = ImagePager(numpy_images[0].shape[0])
+    pages = pager.organize_pages(
+        img, shifted_regions, args.colour
+    )
 
-        for index, page in enumerate(pages):
-            cv2.imwrite("out{}.png".format(index), page)
+    for index, page in enumerate(pages):
+        cv2.imwrite("out{}.png".format(index), page)
 
         if (args.debug):
             import matplotlib.pyplot as plt
