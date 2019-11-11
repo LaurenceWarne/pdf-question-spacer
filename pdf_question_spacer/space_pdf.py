@@ -100,20 +100,21 @@ def main():
     )
 
     for index, page in enumerate(pages):
-        cv2.imwrite("out{}.png".format(index), page)
+        cv2.imwrite("out{index}.png".format(index=index), page)
 
-        if (args.debug):
-            import matplotlib.pyplot as plt
-            for index, row in enumerate(extraction.rows):
-                plt.imshow(row, cmap='gray')
-                extracted = row_filter.most_recent_extracted_rows[index]
-                plt.title("EXTRACTED TEXT: '" + extracted + "'")
-                plt.title(
-                    "MATCHES REGEX: " +
-                    str(bool(re.match(args.regex, extracted))),
-                    loc="right"
-                )
-                plt.show()
+    if (args.debug):
+        import matplotlib.pyplot as plt
+        for index, row in enumerate(extraction.rows):
+            plt.imshow(row, cmap="gray")
+            extracted = row_filter.most_recent_extracted_rows[index]
+            plt.title("EXTRACTED TEXT: '{text}'".format(text=extracted))
+            plt.title(
+                "MATCHES REGEX: {does_match}".format(
+                    does_match=str(bool(re.match(args.regex, extracted)))
+                ),
+                loc="right"
+            )
+            plt.show()
 
 
 if __name__ == "__main__":

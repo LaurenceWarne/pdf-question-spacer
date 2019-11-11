@@ -2,7 +2,7 @@
 
 ## Intro
 
-pdf-question-spacer is a tool used to add whitespace to pdfs. It allows for the addition of whitespace to sections of pdf matching a regular expression, whilst also ensuring page breaks do not cut off shifted text.
+pdf-question-spacer is a tool used to add whitespace to pdfs. It allows for the addition of whitespace to sections of a pdf matching a regular expression, whilst also ensuring page breaks do not cut off shifted text.
 
 For example with the command:
 
