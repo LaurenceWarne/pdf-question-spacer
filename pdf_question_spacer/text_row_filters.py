@@ -6,11 +6,30 @@ processing.
 import re
 from typing import Callable, Any, Sequence, Tuple
 
+import numpy as np
 from nptyping import Array
 import pytesseract
 from fuzzywuzzy import process
 
 from .text_row_extractors import RowExtraction
+
+
+def pad_then_extract(
+        image: Array[Array[Any]],
+        image_to_text_func: Callable[
+            [Array[Array[Any]]], str
+        ] = pytesseract.image_to_string,
+        pad_amount: int = 50,
+        whitespace_element: Any = 255
+):
+    whitespace_line = np.repeat(whitespace_element, image.shape[1])
+    whitespace_line = np.array(whitespace_line, dtype=np.uint8)
+    padded_array = np.concatenate((
+        [whitespace_line] * pad_amount,
+        image,
+        [whitespace_line] * pad_amount
+    ))
+    return image_to_text_func(padded_array)
 
 
 class RowFilter:
@@ -76,7 +95,7 @@ class TextMatcher:
             known_lines: Sequence[str],
             image_to_text_func: Callable[
                 [Array[Array[Any]]], str
-            ] = pytesseract.image_to_string
+            ] = pad_then_extract
     ):
         self._image_to_text_func = image_to_text_func
         self._known_lines = known_lines
