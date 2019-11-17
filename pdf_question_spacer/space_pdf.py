@@ -79,7 +79,8 @@ def main():
     print("Extracting rows of text from image...")
     extractor = TextRowExtractor()
     extraction = extractor.extract(img)
-    row_filter = RowFilter(args.regex, TextMatcher.from_file(args.infile))
+    matcher = TextMatcher.from_array(img)
+    row_filter = RowFilter(args.regex, matcher)
 
     print("Filtering extracted rows by specified regular expression...")
     filtered_extraction = row_filter.filter_extraction(extraction)
@@ -106,11 +107,18 @@ def main():
         import matplotlib.pyplot as plt
         for index, row in enumerate(extraction.rows):
             plt.imshow(row, cmap="gray")
-            extracted = row_filter.most_recent_extracted_rows[index]
-            plt.title("EXTRACTED TEXT: '{text}'".format(text=extracted))
+            extracted = matcher.matches[index]
+            plt.title(
+                """
+                EXTRACTED TEXT: '{extracted_text}'
+                AMENDED TEXT: '{amended_text}'
+                """.format(
+                    extracted_text=extracted[0], amended_text=extracted[1]
+                )
+            )
             plt.title(
                 "MATCHES REGEX: {does_match}".format(
-                    does_match=str(bool(re.match(args.regex, extracted)))
+                    does_match=str(bool(re.match(args.regex, extracted[1])))
                 ),
                 loc="right"
             )

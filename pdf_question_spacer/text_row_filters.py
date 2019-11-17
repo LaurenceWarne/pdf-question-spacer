@@ -4,11 +4,10 @@ processing.
 """
 
 import re
-from typing import Callable, Any, Sequence
+from typing import Callable, Any, Sequence, Tuple
 
 from nptyping import Array
 import pytesseract
-import textract
 from fuzzywuzzy import process
 
 from .text_row_extractors import RowExtraction
@@ -28,7 +27,6 @@ class RowFilter:
     ):
         self._regex = regex
         self._image_to_text_func = image_to_text_func
-        self._most_recent_extracted_rows = []
 
     @property
     def regex(self) -> str:
@@ -49,10 +47,6 @@ class RowFilter:
     ):
         self._image_to_text_func = image_to_text_func
 
-    @property
-    def most_recent_extracted_rows(self) -> Sequence[str]:
-        return self._most_recent_extracted_rows
-
     def filter_extraction(
             self, extraction_obj: RowExtraction) -> RowExtraction:
         """
@@ -60,13 +54,11 @@ class RowFilter:
         RowExtraction obj, and matching the regular expression held by
         this object.
         """
-        self._most_recent_extracted_rows.clear()
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
             text = self._image_to_text_func(row).strip()
             if (re.match(self._regex, text)):
                 matching_indices.append(index)
-            self._most_recent_extracted_rows.append(text)
         return RowExtraction(
             extraction_obj.rows[matching_indices],
             extraction_obj.row_indices[matching_indices]
@@ -88,6 +80,7 @@ class TextMatcher:
     ):
         self._image_to_text_func = image_to_text_func
         self._known_lines = known_lines
+        self._matches = []  # Store matches for convenience
 
     def __call__(self, row: [Array[Array[Any]]]) -> str:
         """
@@ -98,8 +91,10 @@ class TextMatcher:
         row_text = self._image_to_text_func(row)
         if (row_text):  # '' gives annoying fuzzywuzzy warnings
             match = process.extractOne(row_text, self._known_lines)
+            self._matches.append((row_text, match[0]))
             return match[0]
         else:
+            self._matches.append((row_text, "<NO MATCH FOUND>"))
             return row_text
 
     @property
@@ -117,12 +112,16 @@ class TextMatcher:
     def known_lines(self) -> Sequence[str]:
         return self._known_lines
 
+    @property
+    def matches(self) -> Sequence[Tuple[str, str]]:
+        return self._matches
+
     @known_lines.setter
     def known_lines(self, known_lines: Sequence[str]):
         self._known_lines = known_lines
 
     @classmethod
-    def from_file(cls, filename: str) -> "TextMatcher":
-        extraction = textract.process(filename)
-        lines_of_text = str(extraction).split("\\n")
+    def from_array(cls, image_as_array: Array[Array[Any]]) -> "TextMatcher":
+        extraction = pytesseract.image_to_string(image_as_array)
+        lines_of_text = str(extraction).splitlines()
         return cls(lines_of_text)

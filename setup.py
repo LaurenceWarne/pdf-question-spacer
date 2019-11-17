@@ -19,7 +19,7 @@ setup(
     license="MIT",
     install_requires=[
         "numpy", "opencv-python", "pytesseract", "nptyping",
-        "textract", "fuzzywuzzy", "matplotlib", "python-Levenshtein",
+        "fuzzywuzzy", "matplotlib", "python-Levenshtein",
         "pdf2image", "Pillow"
     ],
     zip_safe=False
