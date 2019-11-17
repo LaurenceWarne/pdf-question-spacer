@@ -7,16 +7,18 @@ pdf-question-spacer is a tool used to add whitespace to pdfs. It allows for the 
 For example with the command:
 
 ```
-space-pdf sample.pdf 200  # Defaults to spacing lines starting with numbers
+space-pdf sample.pdf 300  # Defaults to spacing lines starting with numbers
 ```
 
 we can transform sample.pdf:
 
-![GitHub Logo](https://i.imgur.com/eGOXNKjl.png)
+![Image before script](https://i.imgur.com/cFI1aQIl.jpg)
 
 into:
 
-![GitHub Logo](https://i.imgur.com/F3mjaFsl.png)
+![Image after script](https://i.imgur.com/WmypxoVl.png)
+
+More specifically, if ```R``` is a vertical region whose text matches the specified regular expression, then the specified amount of whitespace (300 in our case) is added *above* ```R```.
 
 ## Installation
 
