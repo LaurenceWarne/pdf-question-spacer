@@ -80,7 +80,7 @@ def main():
     extractor = TextRowExtractor()
     extraction = extractor.extract(img)
     matcher = TextMatcher.from_array(img)
-    row_filter = RowFilter(args.regex, matcher)
+    row_filter = RowFilter([args.regex], matcher)
 
     print("Filtering extracted rows by specified regular expression...")
     filtered_extraction = row_filter.filter_extraction(extraction)

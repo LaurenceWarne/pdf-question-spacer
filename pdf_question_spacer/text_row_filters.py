@@ -39,21 +39,21 @@ class RowFilter:
     """
 
     def __init__(
-            self, regex: str,
+            self, regexes: Sequence[str],
             image_to_text_func: Callable[
                 [Array[Array[Any]]], str
             ] = pytesseract.image_to_string
     ):
-        self._regex = regex
+        self._regexes = regexes
         self._image_to_text_func = image_to_text_func
 
     @property
-    def regex(self) -> str:
-        return self._regex
+    def regexes(self) -> str:
+        return self._regexes
 
-    @regex.setter
-    def regex(self, regex: str):
-        self._regex = regex
+    @regexes.setter
+    def regexes(self, regexes: str):
+        self._regexes = regexes
 
     @property
     def image_to_text_func(self) -> Callable[[Array[Array[Any]]], str]:
@@ -76,7 +76,7 @@ class RowFilter:
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
             text = self._image_to_text_func(row).strip()
-            if (re.match(self._regex, text)):
+            if (any(map(lambda regex: re.match(regex, text), self._regexes))):
                 matching_indices.append(index)
         return RowExtraction(
             extraction_obj.rows[matching_indices],
