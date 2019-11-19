@@ -10,6 +10,9 @@ from .text_row_filters import RowFilter, TextMatcher
 from .whitespace_inserter import WhitespaceInserter, ImagePager
 
 
+QUESTION_REGEX = "^(\()?(([\dvi]+)|([a-z]))[\.\)]"
+
+
 def parse_args():
     description = """
     Add whitespace to sections of pdfs and output the resulting images as pngs.
@@ -29,11 +32,22 @@ def parse_args():
     )
     parser.add_argument(
         "-r",
-        "--regex",
-        help="""Match lines with this regular expression. The default regex
-        matches lines which appear to be the start of questions""",
-        default="^(\()?(([\dvi]+)|([a-z]))[\.\)]",
+        "--regexes",
+        nargs="+",
+        help="""Match lines with these regular expressions, in addition
+        to the default regex which matches lines which appear to be the start
+        of questions""",
+        default=[],
     )
+    parser.add_argument(
+        "-ir",
+        "--ignore-default-regex",
+        help="""Do not use the default regex which matches lines which appear
+        to be the start of questions. To use this option you must also use
+        the --regexes option""",
+        action="store_true"
+    )
+
     parser.add_argument(
         "-c",
         "--colour",
@@ -80,7 +94,8 @@ def main():
     extractor = TextRowExtractor()
     extraction = extractor.extract(img)
     matcher = TextMatcher.from_array(img)
-    row_filter = RowFilter([args.regex], matcher)
+    args.regexes += [] if args.ignore_default_regex else [QUESTION_REGEX]
+    row_filter = RowFilter(args.regexes, matcher)
 
     print("Filtering extracted rows by specified regular expression...")
     filtered_extraction = row_filter.filter_extraction(extraction)
@@ -117,8 +132,11 @@ def main():
                 )
             )
             plt.title(
-                "MATCHES REGEX: {does_match}".format(
-                    does_match=str(bool(re.match(args.regex, extracted[1])))
+                "MATCHES A REGEX: {does_match}".format(
+                    does_match=str(any(map(
+                        lambda regex: re.match(regex, extracted[1]),
+                        args.regexes
+                    )))
                 ),
                 loc="right"
             )
