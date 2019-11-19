@@ -93,14 +93,14 @@ def main():
     print("Extracting rows of text from image...")
     extractor = TextRowExtractor()
     extraction = extractor.extract(img)
+
+    print("Filtering extracted rows by specified regular expression...")
     matcher = TextMatcher.from_array(img)
     args.regexes += [] if args.ignore_default_regex else [QUESTION_REGEX]
     row_filter = RowFilter(args.regexes, matcher)
-
-    print("Filtering extracted rows by specified regular expression...")
     filtered_extraction = row_filter.filter_extraction(extraction)
 
-    print("Inserting whitespace")
+    print("Inserting whitespace...")
     wspace_inserter = WhitespaceInserter(args.whitespace_length)
     img, shifted_regions = wspace_inserter.insert_whitespace(
         img,
@@ -109,7 +109,7 @@ def main():
         args.colour
     )
 
-    print("Creating pdf pages")
+    print("Creating pdf pages...")
     pager = ImagePager(numpy_images[0].shape[0])
     pages = pager.organize_pages(
         img, shifted_regions, args.colour

@@ -31,7 +31,8 @@ python3 setup.py install --user
 ## Usage
 
 ```
-usage: space-pdf [-h] [-r REGEX] [-c COLOUR] [-s1] [-d] [--dpi DPI]
+usage: space-pdf [-h] [-r REGEXES [REGEXES ...]] [-ir] [-c COLOUR] [-s1] [-d]
+                 [--dpi DPI]
                  infile whitespace_length
 
 Add whitespace to sections of pdfs and output the resulting images as pngs.
@@ -43,10 +44,14 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -r REGEX, --regex REGEX
-                        Match lines with this regular expression. The default
-                        regex matches lines which appear to be the start of
-                        questions
+  -r REGEXES [REGEXES ...], --regexes REGEXES [REGEXES ...]
+                        Match lines with these regular expressions, in
+                        addition to the default regex which matches lines
+                        which appear to be the start of questions
+  -ir, --ignore-default-regex
+                        Do not use the default regex which matches lines which
+                        appear to be the start of questions. To use this
+                        option you must also use the --regexes option
   -c COLOUR, --colour COLOUR
                         Colour of the whitespace, default 255 (white)
   -s1, --skip-first     Skip first regular expression match
@@ -56,7 +61,6 @@ optional arguments:
                         directly to pdf2image.convert_from_path(), also note
                         using large values will take longer and may cause
                         crashes!
-
 ```
 
 png files will then be created in the working directory and can be converted to a pdf. For example using ImageMagick:
