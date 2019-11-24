@@ -7,6 +7,7 @@ import re
 from typing import Callable, Any, Sequence, Tuple
 
 import numpy as np
+import matplotlib.pyplot as plt
 from nptyping import Array
 import pytesseract
 from fuzzywuzzy import process
@@ -39,32 +40,23 @@ class RowFilter:
     """
 
     def __init__(
-            self, regexes: Sequence[str],
-            image_to_text_func: Callable[
-                [Array[Array[Any]]], str
+            self,
+            region_predicate: Callable[
+                [Array[Array[Any]]], bool
             ] = pytesseract.image_to_string
     ):
-        self._regexes = regexes
-        self._image_to_text_func = image_to_text_func
+        self._region_predicate = region_predicate
 
     @property
-    def regexes(self) -> str:
-        return self._regexes
+    def region_predicate(self) -> Callable[[Array[Array[Any]]], str]:
+        return self._region_predicate
 
-    @regexes.setter
-    def regexes(self, regexes: str):
-        self._regexes = regexes
-
-    @property
-    def image_to_text_func(self) -> Callable[[Array[Array[Any]]], str]:
-        return self._image_to_text_func
-
-    @image_to_text_func.setter
-    def image_to_text_func(
+    @region_predicate.setter
+    def region_predicate(
             self,
-            image_to_text_func: Callable[[Array[Array[Any]]], str]
+            region_predicate: Callable[[Array[Array[Any]]], str]
     ):
-        self._image_to_text_func = image_to_text_func
+        self._region_predicate = region_predicate
 
     def filter_extraction(
             self, extraction_obj: RowExtraction) -> RowExtraction:
@@ -75,8 +67,7 @@ class RowFilter:
         """
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
-            text = self._image_to_text_func(row).strip()
-            if (any(map(lambda regex: re.match(regex, text), self._regexes))):
+            if (self._region_predicate(row)):
                 matching_indices.append(index)
         return RowExtraction(
             extraction_obj.rows[matching_indices],
@@ -93,28 +84,40 @@ class TextMatcher:
     def __init__(
             self,
             known_lines: Sequence[str],
+            regexes: Sequence[str],
             image_to_text_func: Callable[
                 [Array[Array[Any]]], str
             ] = pad_then_extract
     ):
-        self._image_to_text_func = image_to_text_func
+        self._image_to_text_func = image_to_text_func  # For testing
         self._known_lines = known_lines
         self._matches = []  # Store matches for convenience
+        self._regexes = regexes
 
-    def __call__(self, row: [Array[Array[Any]]]) -> str:
+    def __call__(self, row: [Array[Array[Any]]]) -> bool:
         """
-        Extract the text from a numpy array representing an image and return
+        Extract the text from a numpy array representing an image and test
         the best match to that string from this objects known_lines attribute
-        using Levenshtein distance.
+        using Levenshtein distance against this objects regexes attribute.
         """
         row_text = self._image_to_text_func(row)
         if (row_text):  # '' gives annoying fuzzywuzzy warnings
             match = process.extractOne(row_text, self._known_lines)
             self._matches.append((row_text, match[0]))
-            return match[0]
+            return any(
+                map(lambda regex: re.match(regex, match[0]), self._regexes)
+            )
         else:
             self._matches.append((row_text, "<NO MATCH FOUND>"))
-            return row_text
+            return False
+
+    @property
+    def regexes(self) -> str:
+        return self._regexes
+
+    @regexes.setter
+    def regexes(self, regexes: str):
+        self._regexes = regexes
 
     @property
     def image_to_text_func(self) -> Callable[[Array[Array[Any]]], str]:
@@ -144,3 +147,35 @@ class TextMatcher:
         extraction = pytesseract.image_to_string(image_as_array)
         lines_of_text = str(extraction).splitlines()
         return cls(lines_of_text)
+
+
+class InteractiveMatcher:
+    """
+    Class which allows users to select regions to add whitespace to by showing
+    them the regions.
+    """
+
+    def __init__(self, all_rows: RowExtraction):
+        self._all_rows = all_rows
+
+    def __call__(self, row: [Array[Array[Any]]]) -> bool:
+        """
+        Show the region to the user in a matplotlib figure and let them choose
+        whether to accept the region or not via a keypress.
+        """
+        plt.subplot(2, 1, 1)
+        plt.title(
+            """
+            Current Region, input (y/n) to input whitespace (before region)
+            """
+        )
+        plt.imshow(row, cmap="gray")
+
+        all_rows = self._all_rows.row_indices
+        if (self._all_rows.index(row) < len(all_rows)):
+            next_row = self._all_rows[all_rows.index(row) + 1]
+            plt.subplot(2, 1, 2)
+            plt.title("Next Region")
+            plt.imshow(next_row, cmap="gray")
+
+        # Wait for keypress
