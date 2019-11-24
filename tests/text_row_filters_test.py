@@ -15,39 +15,29 @@ class TestRowFilter(TestCase):
         self.extraction = RowExtraction(image_rows, indices)
 
     def test_can_filter_odd_rows_from_test_image(self):
-        text_extractor = ImageToText(["Question", "Answer"])
-        row_filter = RowFilter(["^Question"], text_extractor)
+        row_filter = RowFilter(RegionPredicate())
         extraction = row_filter.filter_extraction(self.extraction)
         self.assertEqual(3, len(extraction.rows))
         self.assertEqual(3, len(extraction.row_indices))
 
     def test_empty_extraction_returned_on_no_matching_rows(self):
-        row_filter = RowFilter(["^Question"], lambda im: "Not a question")
+        row_filter = RowFilter(lambda region: False)
         extraction = row_filter.filter_extraction(self.extraction)
         self.assertEqual(0, len(extraction.rows))
         self.assertEqual(0, len(extraction.row_indices))
 
-    def test_can_filter_rows_matching_exactly_one_regex(self):
-        text_extractor = ImageToText(["Question", "Answer", "Discussion"])
-        row_filter = RowFilter(["^Question", "^Answer"], text_extractor)
+    def test_all_regions_returned_when_all_rows_are_matched(self):
+        row_filter = RowFilter(lambda region: True)
         extraction = row_filter.filter_extraction(self.extraction)
-        self.assertEqual(4, len(extraction.rows))
-        self.assertEqual(4, len(extraction.row_indices))
-
-    def test_can_filter_rows_matching_both_passed_regexes(self):
-        text_extractor = ImageToText(["Question", "Answer"])
-        row_filter = RowFilter(["^Quest", "ion$"], text_extractor)
-        extraction = row_filter.filter_extraction(self.extraction)
-        self.assertEqual(3, len(extraction.rows))
-        self.assertEqual(3, len(extraction.row_indices))
+        self.assertEqual(5, len(extraction.rows))
+        self.assertEqual(5, len(extraction.row_indices))
 
 
-class ImageToText():
+class RegionPredicate():
 
-    def __init__(self, text_set):
+    def __init__(self):
         self._count = -1
-        self._text_set = text_set
 
-    def __call__(self, img):
+    def __call__(self, img) -> bool:
         self._count += 1
-        return self._text_set[self._count % len(self._text_set)]
+        return self._count % 2 == 0

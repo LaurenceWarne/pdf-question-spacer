@@ -43,7 +43,7 @@ class RowFilter:
             self,
             region_predicate: Callable[
                 [Array[Array[Any]]], bool
-            ] = pytesseract.image_to_string
+            ]
     ):
         self._region_predicate = region_predicate
 
@@ -89,10 +89,10 @@ class TextMatcher:
                 [Array[Array[Any]]], str
             ] = pad_then_extract
     ):
-        self._image_to_text_func = image_to_text_func  # For testing
         self._known_lines = known_lines
-        self._matches = []  # Store matches for convenience
         self._regexes = regexes
+        self._matches = []  # Store matches for convenience
+        self._image_to_text_func = image_to_text_func  # For testing
 
     def __call__(self, row: [Array[Array[Any]]]) -> bool:
         """
@@ -126,7 +126,7 @@ class TextMatcher:
     @image_to_text_func.setter
     def image_to_text_func(
             self,
-            image_to_text_func: Callable[[Array[Array[Any]]], str]
+            image_to_text_func: Callable[[Array[Array[Any]]], str],
     ):
         self._image_to_text_func = image_to_text_func
 
@@ -143,10 +143,18 @@ class TextMatcher:
         self._known_lines = known_lines
 
     @classmethod
-    def from_array(cls, image_as_array: Array[Array[Any]]) -> "TextMatcher":
+    def from_array(
+            cls,
+            image_as_array: Array[Array[Any]],
+            regexes,
+            image_to_text_func: Callable[
+                [Array[Array[Any]]], str
+            ] = pad_then_extract
+
+    ) -> "TextMatcher":
         extraction = pytesseract.image_to_string(image_as_array)
         lines_of_text = str(extraction).splitlines()
-        return cls(lines_of_text)
+        return cls(lines_of_text, regexes, image_to_text_func)
 
 
 class InteractiveMatcher:
@@ -157,6 +165,8 @@ class InteractiveMatcher:
 
     def __init__(self, all_rows: RowExtraction):
         self._all_rows = all_rows
+        self._has_button_press_occurred = False
+        self._button_press = "n"
 
     def __call__(self, row: [Array[Array[Any]]]) -> bool:
         """
@@ -171,11 +181,12 @@ class InteractiveMatcher:
         )
         plt.imshow(row, cmap="gray")
 
-        all_rows = self._all_rows.row_indices
-        if (self._all_rows.index(row) < len(all_rows)):
-            next_row = self._all_rows[all_rows.index(row) + 1]
+        row_index = self._all_rows.rows.tolist().index(row)
+        if (row_index < len(self._all_rows.rows)):
+            next_row = self._all_rows.rows[row_index + 1]
             plt.subplot(2, 1, 2)
             plt.title("Next Region")
             plt.imshow(next_row, cmap="gray")
 
         # Wait for keypress
+        plt.waitforbuttonpress()

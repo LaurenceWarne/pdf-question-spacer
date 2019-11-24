@@ -6,7 +6,7 @@ import cv2
 from pdf2image import convert_from_path
 
 from .text_row_extractors import TextRowExtractor
-from .text_row_filters import RowFilter, TextMatcher
+from .text_row_filters import RowFilter, TextMatcher, InteractiveMatcher
 from .whitespace_inserter import WhitespaceInserter, ImagePager
 
 
@@ -95,9 +95,10 @@ def main():
     extraction = extractor.extract(img)
 
     print("Filtering extracted rows by specified regular expression...")
-    matcher = TextMatcher.from_array(img)
     args.regexes += [] if args.ignore_default_regex else [QUESTION_REGEX]
-    row_filter = RowFilter(args.regexes, matcher)
+    #matcher = TextMatcher.from_array(img, args.regexes)
+    matcher = InteractiveMatcher(extraction)
+    row_filter = RowFilter(matcher)
     filtered_extraction = row_filter.filter_extraction(extraction)
 
     print("Inserting whitespace...")
