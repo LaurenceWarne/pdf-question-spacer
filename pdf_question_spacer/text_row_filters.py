@@ -193,12 +193,8 @@ class InteractiveMatcher:
             self.show_preview(index)
 
         plt.subplot(2, 1, 2 if show_preview else 1)
-        plt.title(
-            """
-            Current Region
-            Input (y/n) to add whitespace before the region
-            """
-        )
+        plt.title("Current Region", fontweight="bold")
+        plt.xlabel("Input (y/n) to add whitespace before the region")
         plt.connect('key_press_event', self.key_pressed)
         plt.imshow(row, cmap="gray")
 
@@ -219,7 +215,7 @@ class InteractiveMatcher:
         ])
 
         plt.subplot(2, 1, 1)
-        plt.title("Previous Regions")
+        plt.title("Previous Regions", fontweight="bold")
         plt.imshow(preview, cmap="gray")
 
     def key_pressed(self, event):
