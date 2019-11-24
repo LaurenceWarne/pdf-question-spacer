@@ -21,13 +21,13 @@ class TestRowFilter(TestCase):
         self.assertEqual(3, len(extraction.row_indices))
 
     def test_empty_extraction_returned_on_no_matching_rows(self):
-        row_filter = RowFilter(lambda region: False)
+        row_filter = RowFilter(lambda region, index: False)
         extraction = row_filter.filter_extraction(self.extraction)
         self.assertEqual(0, len(extraction.rows))
         self.assertEqual(0, len(extraction.row_indices))
 
     def test_all_regions_returned_when_all_rows_are_matched(self):
-        row_filter = RowFilter(lambda region: True)
+        row_filter = RowFilter(lambda region, index: True)
         extraction = row_filter.filter_extraction(self.extraction)
         self.assertEqual(5, len(extraction.rows))
         self.assertEqual(5, len(extraction.row_indices))
@@ -38,6 +38,6 @@ class RegionPredicate():
     def __init__(self):
         self._count = -1
 
-    def __call__(self, img) -> bool:
+    def __call__(self, img, index) -> bool:
         self._count += 1
         return self._count % 2 == 0

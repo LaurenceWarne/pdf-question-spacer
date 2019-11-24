@@ -68,7 +68,7 @@ class RowFilter:
         """
         matching_indices = []
         for index, row in enumerate(extraction_obj.rows):
-            if (self._region_predicate(row)):
+            if (self._region_predicate(row, index)):
                 matching_indices.append(index)
         return RowExtraction(
             extraction_obj.rows[matching_indices],
@@ -95,7 +95,7 @@ class TextMatcher:
         self._matches = []  # Store matches for convenience
         self._image_to_text_func = image_to_text_func  # For testing
 
-    def __call__(self, row: [Array[Array[Any]]]) -> bool:
+    def __call__(self, row: [Array[Array[Any]]], index: int) -> bool:
         """
         Extract the text from a numpy array representing an image and test
         the best match to that string from this objects known_lines attribute
@@ -175,19 +175,15 @@ class InteractiveMatcher:
         self._show_previous_regions = show_previous_regions
         self._button_press = "n"
 
-    def __call__(self, row: [Array[Array[Any]]]) -> bool:
+    def __call__(self, row: [Array[Array[Any]]], index: int) -> bool:
         """
         Show the region to the user in a matplotlib figure and let them choose
         whether to accept the region or not via a keypress.
         """
         # First of all show the preview if appropriate
-        row_index = next(  # So convoluted!
-            index for index, row_ in enumerate(self._all_rows.rows)
-            if np.array_equal(row, row_)
-        )
-        show_preview = self._show_previous_regions and row_index != 0
+        show_preview = self._show_previous_regions and index != 0
         if (show_preview):
-            self.show_preview(row_index)
+            self.show_preview(index)
 
         plt.subplot(2, 1, 2 if show_preview else 1)
         plt.title(
