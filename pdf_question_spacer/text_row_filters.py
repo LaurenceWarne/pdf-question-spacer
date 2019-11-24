@@ -16,6 +16,20 @@ from fuzzywuzzy import process
 from .text_row_extractors import RowExtraction
 
 
+def pad_array(
+        image: Array[Array[Any]],
+        pad_amount: int = 50,
+        whitespace_element: Any = 255
+):
+    whitespace_line = np.repeat(whitespace_element, image.shape[1])
+    whitespace_line = np.array(whitespace_line, dtype=np.uint8)
+    return np.concatenate((
+        [whitespace_line] * pad_amount,
+        image,
+        [whitespace_line] * pad_amount
+    ))
+
+
 def pad_then_extract(
         image: Array[Array[Any]],
         image_to_text_func: Callable[
@@ -24,14 +38,7 @@ def pad_then_extract(
         pad_amount: int = 50,
         whitespace_element: Any = 255
 ):
-    whitespace_line = np.repeat(whitespace_element, image.shape[1])
-    whitespace_line = np.array(whitespace_line, dtype=np.uint8)
-    padded_array = np.concatenate((
-        [whitespace_line] * pad_amount,
-        image,
-        [whitespace_line] * pad_amount
-    ))
-    return image_to_text_func(padded_array)
+    return image_to_text_func(pad_array(image, pad_amount, whitespace_element))
 
 
 class RowFilter:
@@ -206,7 +213,10 @@ class InteractiveMatcher:
     def show_preview(self, row_index: int):
         preview_length = min(self._previous_regions_preview, row_index)
         preview_slice = slice(row_index - preview_length, row_index)
-        preview = cv2.vconcat(self._all_rows.rows[preview_slice])
+        preview = cv2.vconcat([
+            pad_array(region, pad_amount=20)
+            for region in self._all_rows.rows[preview_slice]
+        ])
 
         plt.subplot(2, 1, 1)
         plt.title("Previous Regions")
