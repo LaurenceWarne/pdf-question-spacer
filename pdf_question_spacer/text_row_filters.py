@@ -220,3 +220,19 @@ class InteractiveMatcher:
 
     def key_pressed(self, event):
         self._button_press = event.key
+
+    @property
+    def previous_regions_preview(self) -> int:
+        return self._previous_regions_preview
+
+    @previous_regions_preview.setter
+    def regexes(self, previous_regions_preview: int):
+        self._previous_regions_preview = previous_regions_preview
+
+    @property
+    def all_rows(self) -> RowExtraction:
+        return self._all_rows
+
+    @property
+    def show_previous_regions(self) -> bool:
+        return self._show_previous_regions
