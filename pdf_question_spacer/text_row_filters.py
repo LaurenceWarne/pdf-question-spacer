@@ -163,9 +163,15 @@ class InteractiveMatcher:
     them the regions.
     """
 
-    def __init__(self, all_rows: RowExtraction):
+    def __init__(
+            self,
+            all_rows: RowExtraction,
+            show_next_region: bool = False,
+            show_previous_region: bool = True
+    ):
         self._all_rows = all_rows
-        self._has_button_press_occurred = False
+        self._show_next_region = show_next_region
+        self._show_previous_region = show_previous_region
         self._button_press = "n"
 
     def __call__(self, row: [Array[Array[Any]]]) -> bool:
@@ -176,13 +182,18 @@ class InteractiveMatcher:
         plt.subplot(2, 1, 1)
         plt.title(
             """
-            Current Region, input (y/n) to input whitespace (before region)
+            Current Region
+            Input (y/n) to add whitespace before the region
             """
         )
+        plt.connect('key_press_event', self.key_pressed)
         plt.imshow(row, cmap="gray")
 
-        row_index = self._all_rows.rows.tolist().index(row)
-        if (row_index < len(self._all_rows.rows)):
+        row_index = next(  # So convoluted!
+            index for index, row_ in enumerate(self._all_rows.rows)
+            if np.array_equal(row, row_)
+        )
+        if (row_index < len(self._all_rows.rows) and self._show_next_region):
             next_row = self._all_rows.rows[row_index + 1]
             plt.subplot(2, 1, 2)
             plt.title("Next Region")
@@ -190,3 +201,11 @@ class InteractiveMatcher:
 
         # Wait for keypress
         plt.waitforbuttonpress()
+        plt.close()
+        if (self._button_press == "y"):
+            return True
+        else:
+            return False
+
+    def key_pressed(self, event):
+        self._button_press = event.key
