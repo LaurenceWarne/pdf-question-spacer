@@ -30,6 +30,28 @@ def parse_args():
         type=int,
         default=400
     )
+
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        help="""Instead of matching lines using a regular expression, show
+        each region to the user and allow them to decide whether to add
+        whitespace or not (overrides most other options)
+        """,
+        action="store_true"
+    )
+    parser.add_argument(
+        "-pl",
+        "--preview-length",
+        help="""In interactive mode, for every shown region, show the previous
+        <n> regions concatenated (where possible) where n is the value passed
+        to this argument, default is 5. Has no effect if --interactive is not
+        chosen
+        """,
+        type=int,
+        default=5
+    )
+
     parser.add_argument(
         "-r",
         "--regexes",
@@ -64,7 +86,8 @@ def parse_args():
         "-d",
         "--debug",
         help="""Show the text extracted from the pdf regions, along with the
-        corresponging region in a matplotlib figure""",
+        corresponging region in a matplotlib figure (not functional in
+        interactive mode)""",
         action="store_true"
     )
     parser.add_argument(
@@ -94,10 +117,13 @@ def main():
     extractor = TextRowExtractor()
     extraction = extractor.extract(img)
 
-    print("Filtering extracted rows by specified regular expression...")
     args.regexes += [] if args.ignore_default_regex else [QUESTION_REGEX]
-    #matcher = TextMatcher.from_array(img, args.regexes)
-    matcher = InteractiveMatcher(extraction)
+    if (args.interactive):
+        print("Launching interactive mode...")
+        matcher = InteractiveMatcher(extraction, args.preview_length)
+    else:
+        print("Filtering extracted rows by specified regular expression...")
+        matcher = TextMatcher.from_array(img, args.regexes)
     row_filter = RowFilter(matcher)
     filtered_extraction = row_filter.filter_extraction(extraction)
 
@@ -119,7 +145,7 @@ def main():
     for index, page in enumerate(pages):
         cv2.imwrite("out{index}.png".format(index=index), page)
 
-    if (args.debug):
+    if (args.debug and not args.interactive):
         import matplotlib.pyplot as plt
         for index, row in enumerate(extraction.rows):
             plt.imshow(row, cmap="gray")
