@@ -7,9 +7,10 @@ import re
 from typing import Callable, Any, Sequence, Tuple
 
 import numpy as np
+import cv2
 import matplotlib.pyplot as plt
-from nptyping import Array
 import pytesseract
+from nptyping import Array
 from fuzzywuzzy import process
 
 from .text_row_extractors import RowExtraction
@@ -166,12 +167,12 @@ class InteractiveMatcher:
     def __init__(
             self,
             all_rows: RowExtraction,
-            show_next_region: bool = False,
-            show_previous_region: bool = True
+            previous_regions_preview: int = 5,
+            show_previous_regions: bool = True
     ):
         self._all_rows = all_rows
-        self._show_next_region = show_next_region
-        self._show_previous_region = show_previous_region
+        self._previous_regions_preview = previous_regions_preview
+        self._show_previous_regions = show_previous_regions
         self._button_press = "n"
 
     def __call__(self, row: [Array[Array[Any]]]) -> bool:
@@ -179,7 +180,16 @@ class InteractiveMatcher:
         Show the region to the user in a matplotlib figure and let them choose
         whether to accept the region or not via a keypress.
         """
-        plt.subplot(2, 1, 1)
+        # First of all show the preview if appropriate
+        row_index = next(  # So convoluted!
+            index for index, row_ in enumerate(self._all_rows.rows)
+            if np.array_equal(row, row_)
+        )
+        show_preview = self._show_previous_regions and row_index != 0
+        if (show_preview):
+            self.show_preview(row_index)
+
+        plt.subplot(2, 1, 2 if show_preview else 1)
         plt.title(
             """
             Current Region
@@ -189,16 +199,6 @@ class InteractiveMatcher:
         plt.connect('key_press_event', self.key_pressed)
         plt.imshow(row, cmap="gray")
 
-        row_index = next(  # So convoluted!
-            index for index, row_ in enumerate(self._all_rows.rows)
-            if np.array_equal(row, row_)
-        )
-        if (row_index < len(self._all_rows.rows) and self._show_next_region):
-            next_row = self._all_rows.rows[row_index + 1]
-            plt.subplot(2, 1, 2)
-            plt.title("Next Region")
-            plt.imshow(next_row, cmap="gray")
-
         # Wait for keypress
         plt.waitforbuttonpress()
         plt.close()
@@ -206,6 +206,15 @@ class InteractiveMatcher:
             return True
         else:
             return False
+
+    def show_preview(self, row_index: int):
+        preview_length = min(self._previous_regions_preview, row_index)
+        preview_slice = slice(row_index - preview_length, row_index)
+        preview = cv2.vconcat(self._all_rows.rows[preview_slice])
+
+        plt.subplot(2, 1, 1)
+        plt.title("Previous Regions")
+        plt.imshow(preview, cmap="gray")
 
     def key_pressed(self, event):
         self._button_press = event.key
