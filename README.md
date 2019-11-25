@@ -1,12 +1,22 @@
 # pdf-question-spacer
 
-## Intro
-
 pdf-question-spacer is a tool used to add whitespace to pdfs. It allows for the addition of whitespace to sections of a pdf matching a regular expression, whilst also ensuring page breaks do not cut off shifted text.
 
 Alternatively, the user can select which regions of the pdf to add whitespace to interactively.
 
-For example with the command:
+Table of Contents
+=================
+
+   * [pdf-question-spacer](#pdf-question-spacer)
+      * [Intro](#intro)
+      * [Interactive Mode](#interactive-mode)
+      * [Installation](#installation)
+      * [Full Command Line Options:](#full-command-line-options)
+      * [Limitations](#limitations)
+
+## Intro
+
+Using the command:
 
 ```
 space-pdf sample.pdf 300  # Defaults to spacing lines starting with numbers
@@ -44,8 +54,15 @@ Example popup:
 ## Installation
 
 ```
-python3 setup.py install --user
+pip install pdf-question-spacer --user
 ```
+
+Or using [pipx](https://pipxproject.github.io/pipx/):
+
+```
+pipx install pdf-question-spacer
+```
+
 
 [ImageMagick](https://imagemagick.org/index.php) and [tesseract-ocr](https://github.com/tesseract-ocr/tesseract) are also required.
 
