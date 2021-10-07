@@ -18,9 +18,14 @@ setup(
     author="Laurence Warne",
     license="MIT",
     install_requires=[
-        "numpy", "opencv-python", "pytesseract", "nptyping",
-        "fuzzywuzzy", "matplotlib", "python-Levenshtein",
-        "pdf2image", "Pillow"
+        "numpy>=1.20",
+        "opencv-python",
+        "pytesseract",
+        "fuzzywuzzy",
+        "matplotlib",
+        "python-Levenshtein",
+        "pdf2image",
+        "Pillow"
     ],
     zip_safe=False
 )
