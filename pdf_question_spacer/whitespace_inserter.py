@@ -3,9 +3,8 @@ This module contains classes used for inserting whitespace into the appropriate
 places in the pdf, the last stage of processing.
 """
 from typing import Any, Tuple
-
 import numpy as np
-from nptyping import Array
+import numpy.typing as npt
 
 
 class WhitespaceInserter:
@@ -17,11 +16,11 @@ class WhitespaceInserter:
 
     def insert_whitespace(
             self,
-            img: Array[Array[Any]],
-            target_region_indices: Array[Array[int, ..., 2]],
-            all_region_indices: Array[Array[int, ..., 2]],
+            img: npt.NDArray,
+            target_region_indices: npt.NDArray,
+            all_region_indices: npt.NDArray,
             whitespace_element: Any
-    ) -> Tuple[Array[Array[Any]], Array[Array[int, ..., 2]]]:
+    ) -> Tuple[npt.NDArray, npt.NDArray]:
         """
         Insert whitespace into an image (a 2d numpy array) inbetween the
         regions of the image specified by 'target_region_indices'. Return
@@ -53,10 +52,10 @@ class ImagePager:
 
     def pad_regions_spanning_pages(
             self,
-            img: Array[Array[Any]],
-            regions: Array[Array[int, ..., 2]],
+            img: npt.NDArray,
+            regions: npt.NDArray,
             whitespace_element: Any
-    ) -> Array[Array[Array[Any]]]:
+    ) -> npt.NDArray:
         """
         Add lines of whitespace before regions that would otherwise span
         multiple pages. The new padded image array is then returned.
@@ -77,10 +76,10 @@ class ImagePager:
 
     def split_into_pages(
             self,
-            img: Array[Array[Any]],
-            regions: Array[Array[int, ..., 2]],
+            img: npt.NDArray,
+            regions: npt.NDArray,
             whitespace_element: Any
-    ) -> Array[Array[Array[Any]]]:
+    ) -> npt.NDArray:
         """
         Return an array of image arrays, with padding added to the last array
         so that all arrays are of the same shape.
@@ -95,10 +94,10 @@ class ImagePager:
 
     def organize_pages(
             self,
-            img: Array[Array[Any]],
-            regions: Array[Array[int, ..., 2]],
+            img: npt.NDArray,
+            regions: npt.NDArray,
             whitespace_element: Any
-    ) -> Array[Array[Array[Any]]]:
+    ) -> npt.NDArray:
         """
         Returns an array of images (as arrays of size corresponding to
         page_pixel_length) such that none of the regions of the image specified
@@ -125,11 +124,11 @@ def inv_mod(dividend: int, divisor: int):
 
 
 def pad_array(
-        array: Array[Any],
+        array: npt.NDArray,
         index: int,
         pad_element: Any,
         amount: int
-) -> Array[Any]:
+) -> npt.NDArray:
     """
     Add 'amount' sets of 'pad_element' to the specified array at the index
     specified by 'index'.
@@ -143,7 +142,7 @@ def pad_array(
 
 def add_to_regions_above(
         cut_off: int,
-        regions: Array[Array[int, ..., 2]],
+        regions: npt.NDArray,
         amount: int,
         include_equality: bool = True
 ):

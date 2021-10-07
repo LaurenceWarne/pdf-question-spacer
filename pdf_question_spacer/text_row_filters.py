@@ -7,17 +7,17 @@ import re
 from typing import Callable, Any, Sequence, Tuple
 
 import numpy as np
+import numpy.typing as npt
 import cv2
 import matplotlib.pyplot as plt
 import pytesseract
-from nptyping import Array
 from fuzzywuzzy import process
 
 from .text_row_extractors import RowExtraction
 
 
 def pad_array(
-        image: Array[Array[Any]],
+        image: npt.NDArray,
         pad_amount: int = 50,
         whitespace_element: Any = 255
 ):
@@ -31,9 +31,9 @@ def pad_array(
 
 
 def pad_then_extract(
-        image: Array[Array[Any]],
+        image: npt.NDArray,
         image_to_text_func: Callable[
-            [Array[Array[Any]]], str
+            [npt.NDArray], str
         ] = pytesseract.image_to_string,
         pad_amount: int = 50,
         whitespace_element: Any = 255
@@ -50,19 +50,19 @@ class RowFilter:
     def __init__(
             self,
             region_predicate: Callable[
-                [Array[Array[Any]]], bool
+                [npt.NDArray], bool
             ]
     ):
         self._region_predicate = region_predicate
 
     @property
-    def region_predicate(self) -> Callable[[Array[Array[Any]]], str]:
+    def region_predicate(self) -> Callable[[npt.NDArray], str]:
         return self._region_predicate
 
     @region_predicate.setter
     def region_predicate(
             self,
-            region_predicate: Callable[[Array[Array[Any]]], str]
+            region_predicate: Callable[[npt.NDArray], str]
     ):
         self._region_predicate = region_predicate
 
@@ -94,7 +94,7 @@ class TextMatcher:
             known_lines: Sequence[str],
             regexes: Sequence[str],
             image_to_text_func: Callable[
-                [Array[Array[Any]]], str
+                [npt.NDArray], str
             ] = pad_then_extract
     ):
         self._known_lines = known_lines
@@ -102,7 +102,7 @@ class TextMatcher:
         self._matches = []  # Store matches for convenience
         self._image_to_text_func = image_to_text_func  # For testing
 
-    def __call__(self, row: [Array[Array[Any]]], index: int) -> bool:
+    def __call__(self, row: [npt.NDArray], index: int) -> bool:
         """
         Extract the text from a numpy array representing an image and test
         the best match to that string from this objects known_lines attribute
@@ -128,13 +128,13 @@ class TextMatcher:
         self._regexes = regexes
 
     @property
-    def image_to_text_func(self) -> Callable[[Array[Array[Any]]], str]:
+    def image_to_text_func(self) -> Callable[[npt.NDArray], str]:
         return self._image_to_text_func
 
     @image_to_text_func.setter
     def image_to_text_func(
             self,
-            image_to_text_func: Callable[[Array[Array[Any]]], str],
+            image_to_text_func: Callable[[npt.NDArray], str],
     ):
         self._image_to_text_func = image_to_text_func
 
@@ -153,10 +153,10 @@ class TextMatcher:
     @classmethod
     def from_array(
             cls,
-            image_as_array: Array[Array[Any]],
+            image_as_array: npt.NDArray,
             regexes,
             image_to_text_func: Callable[
-                [Array[Array[Any]]], str
+                [npt.NDArray], str
             ] = pad_then_extract
 
     ) -> "TextMatcher":
@@ -182,7 +182,7 @@ class InteractiveMatcher:
         self._show_previous_regions = show_previous_regions
         self._button_press = "n"
 
-    def __call__(self, row: [Array[Array[Any]]], index: int) -> bool:
+    def __call__(self, row: [npt.NDArray], index: int) -> bool:
         """
         Show the region to the user in a matplotlib figure and let them choose
         whether to accept the region or not via a keypress.

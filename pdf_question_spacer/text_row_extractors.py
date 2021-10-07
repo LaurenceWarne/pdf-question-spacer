@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 from typing import Callable, Any
 
-from nptyping import Array
 import numpy as np
+import numpy.typing as npt
 
 
 @dataclass(frozen=True)
@@ -20,8 +20,10 @@ class RowExtraction:
     This class holds the start and end indices of the regions with respect to
     the original image along with the actual regions themselves.
     """
-    rows: Array[Array[Any]]
-    row_indices: Array[Array[int, ..., 2]]
+    # NumPy does not support the annotating of array shapes as of 1.21, this
+    # is expected to change in the future though (see PEP 646).
+    rows: npt.NDArray
+    row_indices: npt.NDArray
 
 
 class TextRowExtractor:
@@ -33,25 +35,25 @@ class TextRowExtractor:
     def __init__(
             self,
             pixel_predicate: Callable[
-                [Array[Array[Any]]], Array[Array[bool]]
+                npt.NDArray, npt.NDArray
             ] = lambda arr: arr == 0
     ):
         self._pixel_predicate = pixel_predicate
 
     @property
     def pixel_predicate(self) -> Callable[
-            [Array[Array[Any]]], Array[Array[bool]]
+            [npt.NDArray], npt.NDArray
     ]:
         return self._pixel_predicate
 
     @pixel_predicate.setter
     def pixel_predicate(
             self,
-            pixel_predicate: Callable[[Array[Array[Any]]], Array[Array[bool]]]
+            pixel_predicate: Callable[[npt.NDArray], npt.NDArray]
     ):
         self._pixel_predicate = pixel_predicate
 
-    def extract(self, image: Array[Array[Any]]) -> RowExtraction:
+    def extract(self, image: npt.NDArray) -> RowExtraction:
         """
         Extract 'regions' from an image matching this objects predicate.
         """
@@ -66,7 +68,7 @@ class TextRowExtractor:
 
 # credit:
 # https://stackoverflow.com/questions/31544129/extract-separate-non-zero-blocks-from-array
-def find_runs(value: Any, a: Array[Any]) -> Array[Array[int, ..., 2]]:
+def find_runs(value: Any, a: npt.NDArray) -> npt.NDArray:
     """inclusive-exclusive"""
     # Create an array that is 1 where a is `value`, and pad each end with
     # an extra 0.
