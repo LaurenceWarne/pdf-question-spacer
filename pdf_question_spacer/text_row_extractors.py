@@ -35,7 +35,7 @@ class TextRowExtractor:
     def __init__(
             self,
             pixel_predicate: Callable[
-                npt.NDArray, npt.NDArray
+                [npt.NDArray], npt.NDArray
             ] = lambda arr: arr == 0
     ):
         self._pixel_predicate = pixel_predicate
