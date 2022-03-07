@@ -1,0 +1,21 @@
+name: pdf-question-spacer
+version: git
+summary: Add whitespace to pdfs
+description: |
+  pdf-question-spacer is a tool used to add whitespace to pdfs. It allows for the addition of whitespace to sections of a pdf matching a regular expression, whilst also ensuring page breaks do not cut off shifted text. Alternatively, the user can select which regions of the pdf to add whitespace to interactively.
+
+confinement: strict
+base: core18
+parts:
+  pdf-question-spacer:
+    plugin: python
+    python-version: python3
+    source: https://github.com/laurencewarne/pdf-question-spacer.git
+
+apps:
+  pdf-question-spacer:
+    command: bin/pdf-question-spacer
+  space-pdf-interactive:
+    command: bin/space-pdf-interactive
+
+  

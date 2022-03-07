@@ -8,6 +8,7 @@ setup(
     include_package_data=True,
     python_requires='>=3.5',
     url="https://github.com/LaurenceWarne/pdf-question-spacer",
+    scripts=['bin/space-pdf-interactive'],
     entry_points={
         "console_scripts":
         [
