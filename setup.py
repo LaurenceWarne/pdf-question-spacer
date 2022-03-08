@@ -19,7 +19,7 @@ setup(
     author="Laurence Warne",
     license="MIT",
     install_requires=[
-        "numpy>=1.20",
+        "numpy==1.19.5",
         "opencv-python",
         "pytesseract",
         "fuzzywuzzy",

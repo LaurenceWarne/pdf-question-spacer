@@ -199,13 +199,12 @@ class InteractiveMatcher:
         plt.imshow(row, cmap="gray")
 
         # Wait for keypress
-        plt.waitforbuttonpress()
+        while self._button_press not in ("y", "n"):
+            plt.waitforbuttonpress()
         plt.close()
-        if (self._button_press == "y"):
-            return True
-        else:
-            return False
+        return self._button_press == "y"
 
+            
     def show_preview(self, row_index: int):
         preview_length = min(self._previous_regions_preview, row_index)
         preview_slice = slice(row_index - preview_length, row_index)
