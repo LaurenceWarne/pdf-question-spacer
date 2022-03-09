@@ -6,7 +6,7 @@ setup(
     packages=find_packages(),
     test_suite="tests",
     include_package_data=True,
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     url="https://github.com/LaurenceWarne/pdf-question-spacer",
     scripts=['bin/space-pdf-interactive'],
     entry_points={
