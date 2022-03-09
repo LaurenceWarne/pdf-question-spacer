@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+
+space-pdf -i $1 $2
+convert *.png -background white -page a4 $3
+rm *.png

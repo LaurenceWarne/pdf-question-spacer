@@ -228,5 +228,4 @@ Thumbs.db
 /ios-moe/xcode/native/
 
 *.sqlite3
-/bin
 /include
