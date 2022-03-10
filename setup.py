@@ -15,7 +15,7 @@ setup(
             "space-pdf=pdf_question_spacer.space_pdf:main",
         ],
     },
-    version="1.0.2",
+    version="1.0.3",
     author="Laurence Warne",
     license="MIT",
     install_requires=[
