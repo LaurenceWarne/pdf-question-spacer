@@ -9,12 +9,13 @@ base: core20
 parts:
   pdf-question-spacer:
     plugin: python
-    python-version: python3
+    #python-version: python3
     source: https://github.com/laurencewarne/pdf-question-spacer.git
-
+    stage-packages:
+      - imagemagick
 apps:
-  pdf-question-spacer:
-    command: bin/pdf-question-spacer
+  # pdf-question-spacer:
+  #   command: bin/pdf-question-spacer
   space-pdf-interactive:
     command: bin/space-pdf-interactive
 
