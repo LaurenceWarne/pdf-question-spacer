@@ -180,7 +180,7 @@ class InteractiveMatcher:
         self._all_rows = all_rows
         self._previous_regions_preview = previous_regions_preview
         self._show_previous_regions = show_previous_regions
-        self._button_press = "n"
+        self._button_press = None
 
     def __call__(self, row: [npt.NDArray], index: int) -> bool:
         """
@@ -201,10 +201,10 @@ class InteractiveMatcher:
         # Wait for keypress
         while self._button_press not in ("y", "n"):
             plt.waitforbuttonpress()
+        press, self._button_press = self._button_press, None
         plt.close()
-        return self._button_press == "y"
+        return press == "y"
 
-            
     def show_preview(self, row_index: int):
         preview_length = min(self._previous_regions_preview, row_index)
         preview_slice = slice(row_index - preview_length, row_index)
