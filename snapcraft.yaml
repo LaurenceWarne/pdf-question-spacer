@@ -39,3 +39,16 @@ apps:
       - gsettings
       - opengl
       - network
+      - network-bind
+  python:
+    command: bin/python $SNAP/bin/python
+    plugs:
+      - home
+      - wayland
+      - x11
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - opengl
+      - network
+      - network-bind
