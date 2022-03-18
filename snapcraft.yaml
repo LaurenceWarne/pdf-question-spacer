@@ -18,26 +18,58 @@ parts:
     plugin: nil
     stage-snaps:
       - tcltk-launch
-  
+
+  openjpeg:
+    plugin: cmake
+    source: https://github.com/uclouvain/openjpeg/archive/v2.4.0.tar.gz
+    source-type: tar
+
+  imagemagick:
+    plugin: autotools
+    source: https://github.com/ImageMagick/ImageMagick/archive/7.1.0-16.tar.gz
+    source-type: tar
+    after: [openjpeg]
+    build-packages:
+      - libjpeg-dev
+      - libpng-dev
+      - libtiff-dev
+      - libwebp-dev
+    stage-packages:
+      - libjpeg8
+      - libpng16-16
+      - libtiff5
+      - libwebpmux3
+      - libgomp1
+      - libwebpdemux2
+      
   pdf-question-spacer:
+    after: [imagemagick]
     plugin: python
     python-version: python3
     source: https://github.com/laurencewarne/pdf-question-spacer.git
+    # override-build: |
+    #   snapcraftctl build
+    #   cd $SNAPCRAFT_PART_INSTALL/etc/ImageMagick-6
+    #   sed -i '/disable ghostscript format types/,+6d' policy.xml
     build-packages:
       - python3-tk
       - execstack
+      - build-essential
+      - ghostscript
+      #- imagemagick
     stage-packages:
-      - imagemagick
       - ffmpeg
       - libsm6
+      - libpng-dev
       - libxext6
       - poppler-utils
       - python3-tk
       - python3-dev
       - ghostscript
       - build-essential
-    organize:
-      usr/bin/convert-im6.q16: usr/bin/convert
+      #- imagemagick
+    # organize:
+    #   usr/bin/convert-im6.q16: usr/bin/convert
 
 apps:
   # pdf-question-spacer:
